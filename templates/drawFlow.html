@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建筑图通 · 图纸流程检索</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', '微软雅黑', sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .black-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1d;
+            clip-path: polygon(0 0, 28% 0, 18% 100%, 0 100%);
+            z-index: 5;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .main-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, #c92a44 0%, #6d1326 100%);
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .main-area::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 30s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .side-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24%;
+            height: 100%;
+            padding: 30px 25px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+        }
+
+        .custom-logo {
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .custom-logo img { 
+            max-width: 220px;
+            height: auto; 
+            display: block;
+            filter: brightness(1.2);
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 30px 0;
+            padding: 10px 14px;
+            background: rgba(201, 42, 68, 0.15);
+            border-left: 4px solid #c92a44;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+            cursor: default;
+            backdrop-filter: blur(2px);
+        }
+        .title-wrapper:hover {
+            background: rgba(201, 42, 68, 0.25);
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(201, 42, 68, 0.3);
+        }
+
+        .title-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #c92a44, #8b1a30);
+            border-radius: 50%;
+            font-size: 20px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .title-wrapper:hover .title-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 20px rgba(201, 42, 68, 0.9);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 0;
+            flex: 1;
+            grid-auto-rows: min-content;
+            align-content: start;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: fit-content;
+        }
+        .feature-icon {
+            width: 26px;
+            height: 26px;
+            stroke: #fff;
+            stroke-width: 1.5;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .feature p {
+            font-size: 14px;
+            color: #eaeaea;
+            line-height: 1.4;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-back {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 22px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 20;
+            width: fit-content;
+        }
+        .btn-back:hover {
+            background: #fff;
+            color: #c92a44;
+        }
+
+        .recognition-stage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 28%;
+            padding-right: 5%;
+            padding-top: 40px;
+            padding-bottom: 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 850px;
+            color: #fff;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .welcome-title {
+            text-align: center;
+            margin-bottom: 10px;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-title .main {
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #ffd6dc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .welcome-title .sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px 30px 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b8b, #c92a44, #8b1a30, #ff6b8b);
+            border-radius: 26px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -2;
+        }
+
+        .upload-card:hover::before {
+            opacity: 0.5;
+        }
+
+        .upload-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .upload-card:hover::after {
+            left: 100%;
+        }
+
+        .file-type-tags {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .file-tag {
+            padding: 5px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .file-tag i {
+            margin-right: 5px;
+            font-size: 11px;
+        }
+
+        .file-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            margin: 20px 0 15px;
+        }
+        
+        .file-path-input {
+            width: 100%;
+            padding: 16px 22px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            font-size: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .file-path-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .file-path-input:focus {
+            border-color: #ff8ba0;
+            outline: none;
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 30px rgba(201, 42, 68, 0.3);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #ff6b8b, #c92a44);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            width: fit-content;
+            box-shadow: 0 10px 20px rgba(201, 42, 68, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analyze-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(201, 42, 68, 0.5);
+        }
+
+        .analyze-btn:hover::before {
+            left: 100%;
+        }
+
+        .analyze-btn:disabled {
+            background: linear-gradient(135deg, #999, #666);
+            box-shadow: none;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .analyze-btn i {
+            font-size: 18px;
+        }
+
+        .loading {
+            display: none;
+            margin: 10px 0 5px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .loading-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text .main {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            display: block;
+        }
+
+        .loading-text .sub {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 3px;
+            display: block;
+        }
+
+        .error-message {
+            margin: 5px 0;
+            padding: 14px 20px;
+            background: rgba(220, 53, 69, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            display: none;
+            text-align: center;
+            font-size: 14px;
+            color: #fff;
+            animation: shake 0.3s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .analysis-result {
+            margin-top: 15px;
+            display: none;
+            animation: slideUp 0.5s ease-out;
+            width: 100%;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-header i {
+            font-size: 22px;
+            color: #ff8ba0;
+        }
+
+        .result-header h2 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .markdown-body {
+            background: transparent !important;
+            color: #fff !important;
+            padding: 0 5px;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .markdown-body h1 {
+            font-size: 24px !important;
+            margin-top: 20px !important;
+            margin-bottom: 15px !important;
+            color: #fff !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+            padding-bottom: 8px !important;
+        }
+
+        .markdown-body h2 {
+            font-size: 20px !important;
+            margin-top: 18px !important;
+            margin-bottom: 12px !important;
+            color: #ffd6dc !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            padding-bottom: 6px !important;
+        }
+
+        .markdown-body h3 {
+            font-size: 18px !important;
+            color: #fff !important;
+            margin-top: 15px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .markdown-body p {
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin-bottom: 12px !important;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            color: rgba(255, 255, 255, 0.9) !important;
+            margin-bottom: 15px !important;
+            padding-left: 25px !important;
+        }
+
+        .markdown-body li {
+            margin-bottom: 5px !important;
+        }
+
+        .markdown-body strong {
+            color: #ffb8c6 !important;
+        }
+
+        .markdown-body code {
+            background: rgba(0, 0, 0, 0.4) !important;
+            color: #ffb8c6 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            font-size: 14px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .markdown-body pre {
+            background: rgba(0, 0, 0, 0.4) !important;
+            padding: 15px !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            margin-bottom: 15px !important;
+        }
+
+        .markdown-body pre code {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        .markdown-body blockquote {
+            border-left-color: #ff8ba0 !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            padding-left: 15px !important;
+            margin: 15px 0 !important;
+        }
+
+        .markdown-body table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+        }
+
+        .markdown-body th {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+            padding: 12px 15px !important;
+            text-align: left !important;
+            border: none !important;
+        }
+
+        .markdown-body td {
+            padding: 10px 15px !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            border-left: none !important;
+            border-right: none !important;
+        }
+
+        .markdown-body tr:last-child td {
+            border-bottom: none !important;
+        }
+
+        .markdown-body tr:hover td {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 20px;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .report-table th {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 12px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .report-table td {
+            padding: 10px 12px;
+            color: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+        .report-table tr:hover td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .recognition-stage::-webkit-scrollbar {
+            width: 6px;
+        }
+        .recognition-stage::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        .recognition-stage::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        .recognition-stage::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="black-layer"></div>
+        <div class="main-area"></div>
+
+        <div class="side-content">
+            <div class="custom-logo">
+                <img src="/static/logo1.png" alt="建筑图通" onerror="this.src='https://via.placeholder.com/200x60?text=建筑图通'; this.style.filter='invert(1)';">
+            </div>
+
+            <div class="title-wrapper">
+                <div class="title-icon">
+                    <i class="fas fa-shapes"></i>
+                </div>
+                <span class="page-title">图纸智能分析</span>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="1.8"/>
+                    </svg>
+                    <p>支持建筑构件图像智能采集与上传</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <circle cx="9" cy="12" r="2" fill="#fff"/>
+                        <circle cx="15" cy="12" r="2" fill="#fff"/>
+                        <path d="M5 5 L7 2 L17 2 L19 5" stroke="#fff" stroke-width="1.5"/>
+                    </svg>
+                    <p>基于YOLO模型实现构件精准识别与分类</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M4 7h16v10H4V7z" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M8 11h8M8 14h6" stroke="#fff" stroke-width="1.8"/>
+                        <rect x="2" y="4" width="20" height="16" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                    </svg>
+                    <p>自动标注构件信息，生成识别报告</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M4 4h16v12H4V4z" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M8 20h8M12 16v4" stroke="#fff" stroke-width="1.5"/>
+                        <circle cx="12" cy="10" r="2" fill="#fff"/>
+                    </svg>
+                    <p>识别结果可同步至云端数据存储</p>
+                </div>
+            </div>
+
+            <button class="btn-back" id="btnBack"><i class="fa-solid fa-home" style="margin-right: 8px;"></i>返回首页</button>
+        </div>
+
+        <div class="recognition-stage" id="recognitionStage">
+            <div class="content-container">
+                <div class="welcome-title">
+                    <span class="main">图纸智能分析</span>
+                    <span class="sub">AI-Powered Drawing Analysis System</span>
+                </div>
+
+                <div class="upload-card">
+                    <div class="file-type-tags">
+                        <span class="file-tag"><i class="fas fa-file"></i> DWG</span>
+                        <span class="file-tag"><i class="fas fa-file-pdf"></i> PDF</span>
+                        <span class="file-tag"><i class="fas fa-file-image"></i> JPG/PNG</span>
+                    </div>
+
+                    <form id="analyze-form">
+                        <div class="file-input-wrapper">
+                            <input type="text" id="file-path" class="file-path-input" placeholder="输入图纸文件路径或拖拽文件到此" required>
+                            <i class="fas fa-folder-open input-icon"></i>
+                        </div>
+                        
+                        <button type="submit" id="analyze-btn" class="analyze-btn">
+                            <i class="fas fa-magic"></i> 开始智能分析
+                        </button>
+                    </form>
+                </div>
+                
+                <div id="loading" class="loading">
+                    <div class="loading-content">
+                        <div class="spinner"></div>
+                        <div class="loading-text">
+                            <span class="main">正在分析图纸</span>
+                            <span class="sub">AI 正在识别图纸中的编号信息...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="error-message" class="error-message">
+                    <i class="fas fa-exclamation-circle" style="margin-right: 10px;"></i>
+                    <span id="error-text"></span>
+                </div>
+                
+                <div id="analysis-result" class="analysis-result">
+                    <div class="result-header">
+                        <i class="fas fa-file-alt"></i>
+                        <h2>编号分析报告</h2>
+                    </div>
+                    <div id="markdown-content" class="markdown-body"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const btnBack = document.getElementById('btnBack');
+            if (btnBack) {
+                btnBack.addEventListener('click', () => {
+                    window.location.href = '/';
+                });
+            }
+
+            $(document).ready(function() {
+                $('#analyze-form').on('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const filePath = $('#file-path').val();
+                    if (!filePath) {
+                        showError('请输入有效的文件路径');
+                        return;
+                    }
+                    
+                    $('#analyze-btn').prop('disabled', true);
+                    $('#loading').show();
+                    $('#error-message').hide();
+                    $('#analysis-result').hide();
+                    
+                    $.ajax({
+                        url: '/analyze_dwg',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            file_path: filePath
+                        }),
+                        success: function(response) {
+                            $('#analyze-btn').prop('disabled', false);
+                            $('#loading').hide();
+                            
+                            if (response.success) {
+                                $('#analysis-result').show();
+                                
+                                const converter = new showdown.Converter({
+                                    tables: true,
+                                    tasklists: true,
+                                    strikethrough: true,
+                                    ghCodeBlocks: true
+                                });
+                                const html = converter.makeHtml(response.analysis);
+                                $('#markdown-content').html(html);
+                                
+                                $('html, body').animate({
+                                    scrollTop: $('#analysis-result').offset().top - 20
+                                }, 500);
+                                
+                            } else {
+                                showError(response.error || '分析失败，请检查文件路径');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            $('#analyze-btn').prop('disabled', false);
+                            $('#loading').hide();
+                            
+                            let errorMsg = '请求失败';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMsg = response.error || error;
+                            } catch (e) {
+                                errorMsg = error;
+                            }
+                            showError('请求失败: ' + errorMsg);
+                        }
+                    });
+                });
+                
+                function showError(message) {
+                    $('#error-text').text(message);
+                    $('#error-message').show();
+                    
+                    setTimeout(function() {
+                        $('#error-message').fadeOut();
+                    }, 5000);
+                }
+
+                const dropZone = document.querySelector('.upload-card');
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.style.borderColor = '#ff8ba0';
+                    dropZone.style.transform = 'scale(1.01)';
+                });
+
+                dropZone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    dropZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    dropZone.style.transform = 'scale(1)';
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    dropZone.style.transform = 'scale(1)';
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        console.log('拖拽的文件:', files[0].name);
+                        if (files[0].path) {
+                            $('#file-path').val(files[0].path);
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

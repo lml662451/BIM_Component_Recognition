@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建筑图通 · 图纸检索系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', '微软雅黑', sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .black-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1d;
+            clip-path: polygon(0 0, 28% 0, 18% 100%, 0 100%);
+            z-index: 5;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .main-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, #c92a44 0%, #6d1326 100%);
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .main-area::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 30s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .side-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24%;
+            height: 100%;
+            padding: 30px 25px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+        }
+
+        .custom-logo {
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .custom-logo img { 
+            max-width: 220px;
+            max-height: 80px;
+            width: auto;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            filter: brightness(1.2);
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 30px 0;
+            padding: 10px 14px;
+            background: rgba(201, 42, 68, 0.15);
+            border-left: 4px solid #c92a44;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+            cursor: default;
+            backdrop-filter: blur(2px);
+        }
+        .title-wrapper:hover {
+            background: rgba(201, 42, 68, 0.25);
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(201, 42, 68, 0.3);
+        }
+
+        .title-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #c92a44, #8b1a30);
+            border-radius: 50%;
+            font-size: 20px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .title-wrapper:hover .title-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 20px rgba(201, 42, 68, 0.9);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 0;
+            flex: 1;
+            grid-auto-rows: min-content;
+            align-content: start;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: fit-content;
+        }
+        .feature-icon {
+            width: 26px;
+            height: 26px;
+            stroke: #fff;
+            stroke-width: 1.5;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .feature p {
+            font-size: 14px;
+            color: #eaeaea;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .btn-back {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 22px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 20;
+            width: fit-content;
+        }
+        .btn-back:hover {
+            background: #fff;
+            color: #c92a44;
+        }
+
+        .recognition-stage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 28%;
+            padding-right: 5%;
+            padding-top: 40px;
+            padding-bottom: 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 850px;
+            color: #fff;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .welcome-title {
+            text-align: center;
+            margin-bottom: 10px;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-title .main {
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #ffd6dc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .welcome-title .sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .search-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px 30px 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .search-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b8b, #c92a44, #8b1a30, #ff6b8b);
+            border-radius: 26px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -2;
+        }
+
+        .search-card:hover::before {
+            opacity: 0.5;
+        }
+
+        .search-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .search-card:hover::after {
+            left: 100%;
+        }
+
+        .file-type-tags {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .file-tag {
+            padding: 5px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .file-tag i {
+            margin-right: 5px;
+            font-size: 11px;
+        }
+
+        .file-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        
+        .file-path-input {
+            width: 100%;
+            padding: 16px 22px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            font-size: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            transition: border-color 0.3s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .file-path-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .file-path-input:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b8b, #c92a44);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(201, 42, 68, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(201, 42, 68, 0.5);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 14px 35px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading {
+            display: none;
+            margin: 10px 0 5px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.3s ease-out;
+            text-align: center;
+        }
+
+        .loading i {
+            margin-right: 10px;
+            color: #ff8ba0;
+        }
+
+        .elegant-divider {
+            width: 100%;
+            height: 1px;
+            margin: 15px 0 20px 0;
+            background: linear-gradient(90deg, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.15) 20%,
+                rgba(255, 255, 255, 0.25) 50%,
+                rgba(255, 255, 255, 0.15) 80%,
+                transparent 100%
+            );
+        }
+
+        .tabs-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tab-item {
+            height: 50px;
+            padding: 0 35px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tab-item i {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .tab-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        .tab-item.active {
+            background: rgba(201, 42, 68, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            box-shadow: 0 12px 40px rgba(201, 42, 68, 0.2);
+        }
+        
+        .tab-item.active i {
+            color: white;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            max-height: 500px;
+        }
+
+        .content-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .content-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .content-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .placeholder-text {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .placeholder-text i {
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .pdf-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .pdf-card {
+            margin-bottom: 15px;
+            transition: all 0.2s;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 15px;
+        }
+        
+        .pdf-card h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 5px;
+        }
+        
+        .pdf-card h3 i {
+            color: #ff8ba0;
+            font-size: 16px;
+        }
+        
+        .pdf-card h3 .page-number {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+            margin-left: 10px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 10px;
+            border-radius: 30px;
+        }
+        
+        .pdf-card .image-container {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .pdf-card img {
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: block;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s;
+        }
+        
+        .pdf-card img:hover {
+            transform: scale(1.01);
+        }
+
+        .highlight {
+            outline: 2px solid #ff8ba0;
+            outline-offset: 4px;
+            border-radius: 16px;
+        }
+
+        .chat-container {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .message-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message-row.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            font-size: 20px;
+            color: white;
+        }
+        
+        .avatar:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .avatar.ai {
+            background: rgba(201, 42, 68, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .avatar.user {
+            background: rgba(42, 111, 151, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .message-content {
+            max-width: calc(80% - 54px);
+        }
+        
+        .message-bubble {
+            padding: 14px 20px;
+            border-radius: 24px;
+            font-size: 14px;
+            line-height: 1.5;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            word-break: break-word;
+        }
+        
+        .message-row.user .message-bubble {
+            background: rgba(201, 42, 68, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+        
+        .message-row.ai .message-bubble {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f0f0f0;
+            border-bottom-left-radius: 6px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+            padding-left: 5px;
+        }
+
+        .chat-loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 12px 20px;
+            display: none;
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 10px 10px 10px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-input-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 15px;
+            padding: 8px 0;
+            outline: none;
+        }
+        
+        .chat-input-container input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .chat-input-container button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .chat-input-container button:hover {
+            background: rgba(201, 42, 68, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .recognition-stage::-webkit-scrollbar {
+            width: 6px;
+        }
+        .recognition-stage::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        .recognition-stage::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        .recognition-stage::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .image-error {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .image-error i {
+            font-size: 24px;
+            color: #ff8ba0;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="black-layer"></div>
+        <div class="main-area"></div>
+
+        <div class="side-content">
+            <div class="custom-logo">
+                <img src="/static/logo1.png" 
+                     alt="建筑图通"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'244\' height=\'80\' viewBox=\'0 0 244 80\'%3E%3Crect width=\'244\' height=\'80\' fill=\'%23c92a44\'/%3E%3Ctext x=\'30\' y=\'50\' font-family=\'Arial\' font-size=\'32\' fill=\'white\'%3E建筑图通%3C/text%3E%3C/svg%3E';">
+            </div>
+            <div class="title-wrapper">
+                <div class="title-icon"><i class="fas fa-shapes"></i></div>
+                <span class="page-title">图纸流程检索</span>
+            </div>
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.5" fill="none"/><path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="1.8"/></svg>
+                    <p>支持建筑构件图像智能采集与上传</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/><circle cx="9" cy="12" r="2" fill="#fff"/><circle cx="15" cy="12" r="2" fill="#fff"/><path d="M5 5 L7 2 L17 2 L19 5" stroke="#fff" stroke-width="1.5"/></svg>
+                    <p>基于YOLO模型实现构件精准识别与分类</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24"><path d="M4 7h16v10H4V7z" stroke="#fff" stroke-width="1.5" fill="none"/><path d="M8 11h8M8 14h6" stroke="#fff" stroke-width="1.8"/><rect x="2" y="4" width="20" height="16" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/></svg>
+                    <p>自动标注构件信息，生成识别报告</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24"><path d="M4 4h16v12H4V4z" stroke="#fff" stroke-width="1.5" fill="none"/><path d="M8 20h8M12 16v4" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="10" r="2" fill="#fff"/></svg>
+                    <p>识别结果可同步至云端数据存储</p>
+                </div>
+            </div>
+            <button class="btn-back" id="btnBack"><i class="fa-solid fa-home" style="margin-right: 8px;"></i>返回首页</button>
+        </div>
+
+        <div class="recognition-stage" id="recognitionStage">
+            <div class="content-container">
+                <div class="welcome-title">
+                    <span class="main">图纸检索系统</span>
+                    <span class="sub">Drawing Search & AI Assistant</span>
+                </div>
+
+                <div class="search-card">
+                    <div class="file-type-tags">
+                        <span class="file-tag"><i class="fa-regular fa-file-pdf"></i> PDF</span>
+                        <span class="file-tag"><i class="fa-regular fa-file-lines"></i> 图集编号</span>
+                        <span class="file-tag"><i class="fa-regular fa-note-sticky"></i> 页码定位</span>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-wrapper">
+                            <input type="text" id="file_name" class="file-path-input" placeholder="图集编号 (如 12G614-1)">
+                            <i class="fa-regular fa-file-pdf input-icon"></i>
+                        </div>
+                        
+                        <div class="input-wrapper">
+                            <input type="number" id="page_number" class="file-path-input" min="1" placeholder="页码">
+                            <i class="fa-regular fa-note-sticky input-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn-primary" id="searchPdfBtn">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            搜索
+                        </button>
+                        <button class="btn-secondary" id="jumpPageBtn">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                            跳转
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i> 正在加载PDF内容...
+                </div>
+
+                <div class="elegant-divider"></div>
+
+                <div class="tabs-wrapper">
+                    <div class="tab-item active" data-tab="search">
+                        <i class="fa-regular fa-rectangle-list"></i>
+                        图纸检索结果
+                    </div>
+                    <div class="tab-item" data-tab="chat">
+                        <i class="fa-regular fa-comment"></i>
+                        AI智能对话
+                    </div>
+                </div>
+
+                <div class="content-area" id="contentArea">
+                    <div class="tab-pane search-pane" id="searchPane">
+                        <div class="pdf-list" id="results">
+                            <div class="placeholder-text">
+                                <i class="fa-regular fa-file-pdf"></i>
+                                请输入图集编号进行搜索
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane chat-pane" id="chatPane" style="display: none;">
+                        <div class="chat-container">
+                            <div class="chat-messages" id="chat_content">
+                                <div class="message-row ai">
+                                    <div class="avatar ai">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">
+                                            您好，我是AI助手。您可以询问图纸内容、构件信息或规范。
+                                        </div>
+                                        <div class="message-time">刚刚</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-loading" id="chat_loading">
+                                <i class="fa-solid fa-spinner fa-spin"></i> AI正在思考...
+                            </div>
+                            
+                            <div class="chat-input-container">
+                                <input type="text" id="chat_input" placeholder="输入您的问题...">
+                                <button id="sendChatBtn"><i class="fa-regular fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let currentPages = [];
+            let currentFileName = '';
+
+            const $fileName = $('#file_name');
+            const $pageNumber = $('#page_number');
+            const $searchBtn = $('#searchPdfBtn');
+            const $jumpBtn = $('#jumpPageBtn');
+            const $results = $('#results');
+            const $loading = $('#loading');
+            const $tabs = $('.tab-item');
+            const $searchPane = $('#searchPane');
+            const $chatPane = $('#chatPane');
+            const $chatContent = $('#chat_content');
+            const $chatInput = $('#chat_input');
+            const $sendChatBtn = $('#sendChatBtn');
+            const $chatLoading = $('#chat_loading');
+            const $btnBack = $('#btnBack');
+
+            $fileName.val('');
+            $pageNumber.val('');
+
+            function searchPDF() {
+                const fileName = $fileName.val().trim();
+                if (!fileName) {
+                    alert('请输入图集编号');
+                    return;
+                }
+                
+                currentFileName = fileName;
+                const cleanFileName = fileName.replace('.pdf', '');
+                
+                activateTab('search');
+                
+                $loading.show();
+                $results.empty();
+
+                $.ajax({
+                    url: '/analyze_pdf',
+                    method: 'POST',
+                    data: { file_name: fileName },
+                    success: function(response) {
+                        $loading.hide();
+                        if (response.success) {
+                            currentPages = response.pages;
+                            displayPages(currentPages);
+                        } else {
+                            $results.html(`<div class="placeholder-text"><i class="fa-regular fa-file-pdf"></i>${response.error || '未找到该图集'}</div>`);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $loading.hide();
+                        $results.html(`<div class="placeholder-text"><i class="fa-regular fa-file-pdf"></i>处理请求时出错: ${error}</div>`);
+                    }
+                });
+            }
+
+            function displayPages(pages) {
+                $results.empty();
+                if (!pages || pages.length === 0) {
+                    $results.html(`<div class="placeholder-text"><i class="fa-regular fa-file-pdf"></i>没有找到页面数据</div>`);
+                    return;
+                }
+                
+                pages.sort((a, b) => a.page_number - b.page_number);
+                
+                const fileName = $fileName.val().trim().replace('.pdf', '');
+                
+                pages.forEach(page => {
+                    const pageHtml = `
+                        <div class="pdf-card" id="page_${page.page_number}">
+                            <h3>
+                                <i class="fa-regular fa-file-pdf"></i>
+                                第 ${page.page_number} 页
+                                <span class="page-number">${fileName}</span>
+                            </h3>
+                            <div class="image-container">
+                                <img src="/output_images/${fileName}/${page.image_path}" 
+                                     alt="页面 ${page.page_number}" 
+                                     loading="lazy"
+                                     onload="this.style.display='block'"
+                                     onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div class=\\'image-error\\'><i class=\\'fa-regular fa-image\\'></i>图片加载失败<br><small>${page.image_path}</small></div>';">
+                            </div>
+                        </div>
+                    `;
+                    $results.append(pageHtml);
+                });
+                
+                console.log(`显示 ${pages.length} 页`);
+            }
+
+            function jumpToPage() {
+                const pageNum = parseInt($pageNumber.val());
+                const fileName = $fileName.val().trim();
+                
+                if (!pageNum || pageNum < 1) {
+                    alert('请输入有效的页码');
+                    return;
+                }
+                if (!fileName) {
+                    alert('请先输入图集编号');
+                    return;
+                }
+                
+                const targetElement = document.getElementById(`page_${pageNum}`);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                    targetElement.classList.add('highlight');
+                    setTimeout(() => {
+                        targetElement.classList.remove('highlight');
+                    }, 2000);
+                } else {
+                    alert('未找到指定页码');
+                }
+            }
+
+            function sendMessage() {
+                const message = $chatInput.val().trim();
+                if (!message) {
+                    alert('请输入您的问题');
+                    return;
+                }
+
+                const now = new Date();
+                const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                const userMessage = `
+                    <div class="message-row user">
+                        <div class="avatar user">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-bubble">${message}</div>
+                            <div class="message-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+                $chatContent.append(userMessage);
+                $chatInput.val('');
+                $chatContent.scrollTop($chatContent[0].scrollHeight);
+
+                $chatLoading.show();
+
+                $.ajax({
+                    url: '/ask_question',
+                    method: 'POST',
+                    data: { question: message },
+                    success: function(response) {
+                        $chatLoading.hide();
+                        if (response.success) {
+                            const botMessage = `
+                                <div class="message-row ai">
+                                    <div class="avatar ai">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">${response.answer}</div>
+                                        <div class="message-time">${timeStr}</div>
+                                    </div>
+                                </div>
+                            `;
+                            $chatContent.append(botMessage);
+                        } else {
+                            const errorMessage = `
+                                <div class="message-row ai">
+                                    <div class="avatar ai">
+                                        <i class="fa-solid fa-robot"></i>
+                                    </div>
+                                    <div class="message-content">
+                                        <div class="message-bubble">无法获取回答，请稍后再试。</div>
+                                        <div class="message-time">${timeStr}</div>
+                                    </div>
+                                </div>
+                            `;
+                            $chatContent.append(errorMessage);
+                        }
+                        $chatContent.scrollTop($chatContent[0].scrollHeight);
+                    },
+                    error: function() {
+                        $chatLoading.hide();
+                        const now = new Date();
+                        const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+                        const errorMessage = `
+                            <div class="message-row ai">
+                                <div class="avatar ai">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-bubble">无法获取回答，请稍后再试。</div>
+                                    <div class="message-time">${timeStr}</div>
+                                </div>
+                            </div>
+                        `;
+                        $chatContent.append(errorMessage);
+                        $chatContent.scrollTop($chatContent[0].scrollHeight);
+                    }
+                });
+            }
+
+            function activateTab(tabId) {
+                $tabs.each(function() {
+                    const isActive = $(this).data('tab') === tabId;
+                    $(this).toggleClass('active', isActive);
+                });
+                
+                if (tabId === 'search') {
+                    $searchPane.show();
+                    $chatPane.hide();
+                } else {
+                    $searchPane.hide();
+                    $chatPane.show();
+                }
+            }
+
+            $searchBtn.on('click', searchPDF);
+            $jumpBtn.on('click', jumpToPage);
+            $sendChatBtn.on('click', sendMessage);
+            
+            $chatInput.on('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            $tabs.on('click', function() {
+                activateTab($(this).data('tab'));
+            });
+
+            $btnBack.on('click', function() {
+                window.location.href = '/';
+            });
+
+            $fileName.on('keypress', function(e) {
+                if (e.key === 'Enter') searchPDF();
+            });
+
+            $pageNumber.on('keypress', function(e) {
+                if (e.key === 'Enter') jumpToPage();
+            });
+
+            activateTab('search');
+        });
+    </script>
+</body>
+</html>

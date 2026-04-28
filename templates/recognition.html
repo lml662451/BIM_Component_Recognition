@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建筑图通 · 构件智能识别</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', '微软雅黑', sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .black-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1d;
+            clip-path: polygon(0 0, 28% 0, 18% 100%, 0 100%);
+            z-index: 5;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .main-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, #c92a44 0%, #6d1326 100%);
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .main-area::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: rotate 30s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .side-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24%;
+            height: 100%;
+            padding: 30px 25px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+        }
+
+        .custom-logo {
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .custom-logo img { 
+            max-width: 220px;
+            height: auto; 
+            display: block;
+            filter: brightness(1.2);
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 30px 0;
+            padding: 10px 14px;
+            background: rgba(201, 42, 68, 0.15);
+            border-left: 4px solid #c92a44;
+            border-radius: 0 8px 8px 0;
+            transition: all 0.3s ease;
+            cursor: default;
+            backdrop-filter: blur(2px);
+        }
+        .title-wrapper:hover {
+            background: rgba(201, 42, 68, 0.25);
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(201, 42, 68, 0.3);
+        }
+
+        .title-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #c92a44, #8b1a30);
+            border-radius: 50%;
+            font-size: 20px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .title-wrapper:hover .title-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 20px rgba(201, 42, 68, 0.9);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 0;
+            flex: 1;
+            grid-auto-rows: min-content;
+            align-content: start;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: fit-content;
+        }
+        .feature-icon {
+            width: 26px;
+            height: 26px;
+            stroke: #fff;
+            stroke-width: 1.5;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .feature p {
+            font-size: 14px;
+            color: #eaeaea;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .btn-back {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 8px 22px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 20;
+            width: fit-content;
+        }
+        .btn-back:hover {
+            background: #fff;
+            color: #c92a44;
+        }
+
+        .recognition-stage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 8;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-left: 28%;
+            padding-right: 5%;
+            padding-top: 40px;
+            padding-bottom: 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 900px;
+            color: #fff;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .welcome-title {
+            text-align: center;
+            margin-bottom: 10px;
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-title .main {
+            font-size: 38px;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #ffd6dc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .welcome-title .sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b8b, #c92a44, #8b1a30, #ff6b8b);
+            border-radius: 26px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -2;
+        }
+
+        .upload-card:hover::before {
+            opacity: 0.5;
+        }
+
+        .upload-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .upload-card:hover::after {
+            left: 100%;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-type-tags {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .file-tag {
+            padding: 5px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .file-tag i {
+            margin-right: 5px;
+            font-size: 11px;
+        }
+
+        .file-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .comparison-wrapper {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .image-row {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .image-col {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .image-col:hover {
+            background: rgba(0, 0, 0, 0.25);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .col-header {
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 8px;
+        }
+
+        .col-header i {
+            color: #ff8ba0;
+            margin-right: 8px;
+        }
+
+        .image-container {
+            min-height: 250px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .placeholder-icon {
+            font-size: 48px;
+            color: rgba(255,255,255,0.3);
+            text-align: center;
+        }
+
+        .info-panel {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .info-title i {
+            color: #ff8ba0;
+            margin-right: 8px;
+        }
+
+        .detection-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .detection-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .detection-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .detection-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+
+        .detection-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(201, 42, 68, 0.15);
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .detection-name {
+            color: #fff;
+            font-weight: 450;
+        }
+
+        .detection-conf {
+            color: #b0ffb0;
+            font-weight: 600;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            min-width: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #startRecognizeBtn {
+            background: linear-gradient(135deg, #ff6b8b, #c92a44);
+            border: none;
+            box-shadow: 0 10px 20px rgba(201, 42, 68, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #startRecognizeBtn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        #startRecognizeBtn:hover::before {
+            left: 100%;
+        }
+
+        .camera-option {
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-block;
+            width: fit-content;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.08);
+            padding: 10px 25px;
+            border-radius: 40px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        .camera-option:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        .camera-option i {
+            margin-right: 8px;
+            color: #ff8ba0;
+        }
+
+        .recognition-stage::-webkit-scrollbar {
+            width: 6px;
+        }
+        .recognition-stage::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        .recognition-stage::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        .recognition-stage::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="black-layer"></div>
+        <div class="main-area"></div>
+
+        <div class="side-content">
+            <div class="custom-logo">
+                <img src="/static/logo1.png" alt="建筑图通" onerror="this.src='https://via.placeholder.com/200x60?text=建筑图通'; this.style.filter='invert(1)';">
+            </div>
+
+            <div class="title-wrapper">
+                <div class="title-icon">
+                    <i class="fas fa-shapes"></i>
+                </div>
+                <span class="page-title">构件智能识别</span>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M12 8v8M8 12h8" stroke="#fff" stroke-width="1.8"/>
+                    </svg>
+                    <p>支持建筑构件图像智能采集与上传</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <circle cx="9" cy="12" r="2" fill="#fff"/>
+                        <circle cx="15" cy="12" r="2" fill="#fff"/>
+                        <path d="M5 5 L7 2 L17 2 L19 5" stroke="#fff" stroke-width="1.5"/>
+                    </svg>
+                    <p>基于YOLO模型实现构件精准识别与分类</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M4 7h16v10H4V7z" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M8 11h8M8 14h6" stroke="#fff" stroke-width="1.8"/>
+                        <rect x="2" y="4" width="20" height="16" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                    </svg>
+                    <p>自动标注构件信息，生成识别报告</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M4 4h16v12H4V4z" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M8 20h8M12 16v4" stroke="#fff" stroke-width="1.5"/>
+                        <circle cx="12" cy="10" r="2" fill="#fff"/>
+                    </svg>
+                    <p>识别结果可同步至云端数据存储</p>
+                </div>
+            </div>
+
+            <button class="btn-back" id="btnBack"><i class="fa-solid fa-home" style="margin-right: 8px;"></i>返回首页</button>
+        </div>
+
+        <div class="recognition-stage" id="recognitionStage">
+            <div class="content-container">
+                <div class="welcome-title">
+                    <span class="main">构件智能识别</span>
+                    <span class="sub">Component Recognition System</span>
+                </div>
+
+                <label for="fileInput" class="upload-card" id="uploadCard">
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="upload-text">点击或拖拽上传图纸/构件图像</div>
+                    <div class="upload-hint">支持 JPG, PNG, BMP (单张)</div>
+                    
+                    <div class="file-type-tags">
+                        <span class="file-tag"><i class="fas fa-file-image"></i> JPG</span>
+                        <span class="file-tag"><i class="fas fa-file-image"></i> PNG</span>
+                        <span class="file-tag"><i class="fas fa-file-image"></i> BMP</span>
+                    </div>
+                </label>
+                <input type="file" id="fileInput" accept="image/*">
+
+                <div class="comparison-wrapper" id="comparisonWrapper">
+                    <div class="image-row">
+                        <div class="image-col">
+                            <div class="col-header"><i class="fas fa-cloud-upload-alt"></i>上传图片</div>
+                            <div class="image-container" id="originalImageContainer">
+                                <img id="originalImg" src="" alt="原图" style="display: none;">
+                                <div class="placeholder-icon"><i class="fas fa-image"></i></div>
+                            </div>
+                        </div>
+                        <div class="image-col">
+                            <div class="col-header"><i class="fas fa-robot"></i>识别结果</div>
+                            <div class="image-container" id="resultImageContainer">
+                                <img id="resultImg" src="" alt="识别结果" style="display: none;">
+                                <div class="placeholder-icon"><i class="fas fa-draw-polygon"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-panel">
+                        <div class="info-title"><i class="fas fa-list-ul"></i>检测列表 (类别 · 置信度)</div>
+                        <div class="detection-list" id="detectionList">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn" id="startRecognizeBtn"><i class="fas fa-play"></i>开始识别</button>
+                    <button class="action-btn" id="resetBtn"><i class="fas fa-undo-alt"></i>重置</button>
+                    <button class="action-btn" id="saveResultBtn"><i class="fas fa-save"></i>保存结果</button>
+                </div>
+
+                <div class="camera-option" id="cameraMock">
+                    <i class="fas fa-camera"></i> 摄像头采集
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const btnBack = document.getElementById('btnBack');
+            const fileInput = document.getElementById('fileInput');
+            const uploadCard = document.getElementById('uploadCard');
+            const startBtn = document.getElementById('startRecognizeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const saveBtn = document.getElementById('saveResultBtn');
+            const cameraMock = document.getElementById('cameraMock');
+
+            const comparisonWrapper = document.getElementById('comparisonWrapper');
+            const originalImg = document.getElementById('originalImg');
+            const originalPlaceholder = document.querySelector('#originalImageContainer .placeholder-icon');
+            const resultImg = document.getElementById('resultImg');
+            const resultPlaceholder = document.querySelector('#resultImageContainer .placeholder-icon');
+            const detectionList = document.getElementById('detectionList');
+
+            let currentFile = null;
+
+            function showOriginalImage(src) {
+                originalImg.src = src;
+                originalImg.style.display = 'block';
+                originalPlaceholder.style.display = 'none';
+            }
+            function clearOriginalImage() {
+                originalImg.src = '';
+                originalImg.style.display = 'none';
+                originalPlaceholder.style.display = 'flex';
+            }
+            function showResultImage(base64Data) {
+                resultImg.src = 'data:image/jpeg;base64,' + base64Data;
+                resultImg.style.display = 'block';
+                resultPlaceholder.style.display = 'none';
+            }
+            function clearResultImage() {
+                resultImg.src = '';
+                resultImg.style.display = 'none';
+                resultPlaceholder.style.display = 'flex';
+            }
+            function updateDetectionList(detections) {
+                detectionList.innerHTML = '';
+                if (detections && detections.length > 0) {
+                    detections.forEach(d => {
+                        let confValue = parseFloat(d.confidence);
+                        let confPercent = (confValue * 100).toFixed(1) + '%';
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'detection-item';
+                        itemDiv.innerHTML = `
+                            <span class="detection-name">${d.name}</span>
+                            <span class="detection-conf">${confPercent}</span>
+                        `;
+                        detectionList.appendChild(itemDiv);
+                    });
+                } else {
+                    detectionList.innerHTML = '<div class="detection-item" style="background:transparent; border-left-color:#aaa;">暂无检测到构件</div>';
+                }
+            }
+            function resetToInitial() {
+                comparisonWrapper.style.display = 'none';
+                fileInput.value = '';
+                currentFile = null;
+                clearOriginalImage();
+                clearResultImage();
+                detectionList.innerHTML = '';
+            }
+
+            btnBack.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    currentFile = file;
+
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        comparisonWrapper.style.display = 'flex';
+                        showOriginalImage(ev.target.result);
+                        clearResultImage();
+                        detectionList.innerHTML = '<div class="detection-item" style="background:transparent;">上传后点击"开始识别"</div>';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            uploadCard.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadCard.style.background = 'rgba(255, 255, 255, 0.08)';
+            });
+            uploadCard.addEventListener('dragleave', () => {
+                uploadCard.style.background = 'rgba(255, 255, 255, 0.05)';
+            });
+            uploadCard.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadCard.style.background = 'rgba(255, 255, 255, 0.05)';
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    currentFile = file;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        comparisonWrapper.style.display = 'flex';
+                        showOriginalImage(ev.target.result);
+                        clearResultImage();
+                        detectionList.innerHTML = '<div class="detection-item" style="background:transparent;">上传后点击"开始识别"</div>';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            startBtn.addEventListener('click', async () => {
+                if (!currentFile) {
+                    alert('请先上传一张图片');
+                    return;
+                }
+
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> 识别中...';
+
+                const formData = new FormData();
+                formData.append('file', currentFile);
+
+                try {
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showResultImage(data.annotated_image);
+                        if (data.detections && data.detections.length > 0) {
+                            updateDetectionList(data.detections);
+                        } else {
+                            detectionList.innerHTML = '<div class="detection-item" style="background:transparent;">未检测到构件</div>';
+                        }
+                    } else {
+                        alert('识别失败：' + (data.error || '未知错误'));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('网络错误或服务器异常');
+                } finally {
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-play"></i>开始识别';
+                }
+            });
+
+            resetBtn.addEventListener('click', () => {
+                resetToInitial();
+            });
+
+            saveBtn.addEventListener('click', () => {
+                alert('识别结果已保存至云端 (演示)');
+            });
+
+            cameraMock.addEventListener('click', () => {
+                alert('摄像头采集功能 (演示)\n将模拟上传测试图片');
+                fetch('https://via.placeholder.com/400x300?text=Test+Image')
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const mockFile = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
+                        currentFile = mockFile;
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            comparisonWrapper.style.display = 'flex';
+                            showOriginalImage(ev.target.result);
+                            clearResultImage();
+                            detectionList.innerHTML = '<div class="detection-item" style="background:transparent;">上传后点击"开始识别"</div>';
+                        };
+                        reader.readAsDataURL(mockFile);
+                    })
+                    .catch(() => alert('模拟图片加载失败，请直接上传'));
+            });
+
+            comparisonWrapper.style.display = 'none';
+        })();
+    </script>
+</body>
+</html>

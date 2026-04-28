@@ -1,0 +1,125 @@
+2026-04-28 21:19:28 - INFO - 确保目录存在: pdf_files
+2026-04-28 21:19:28 - INFO - 确保目录存在: output_images
+2026-04-28 21:19:28 - INFO - 确保目录存在: temp_images
+2026-04-28 21:19:28 - INFO - 数据库初始化成功
+2026-04-28 21:19:28 - INFO - 找到PDF文件: ['12G614-1.pdf']
+2026-04-28 21:19:28 - INFO - 开始处理PDF: 12G614-1.pdf
+2026-04-28 21:19:28 - INFO - 正在处理PDF文件: 12G614-1.pdf
+2026-04-28 21:19:28 - INFO - 创建输出目录: output_images\12G614-1
+2026-04-28 21:19:28 - INFO - PDF文件共有 33 页
+2026-04-28 21:19:29 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_1.png
+2026-04-28 21:19:29 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_1.png
+2026-04-28 21:19:29 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_2.png
+2026-04-28 21:19:29 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_2.png
+2026-04-28 21:19:29 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_3.png
+2026-04-28 21:19:29 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_3.png
+2026-04-28 21:19:29 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_4.png
+2026-04-28 21:19:29 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_4.png
+2026-04-28 21:19:29 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_5.png
+2026-04-28 21:19:29 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_5.png
+2026-04-28 21:19:30 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_6.png
+2026-04-28 21:19:30 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_6.png
+2026-04-28 21:19:30 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_7.png
+2026-04-28 21:19:30 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_7.png
+2026-04-28 21:19:30 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_8.png
+2026-04-28 21:19:30 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_8.png
+2026-04-28 21:19:30 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_9.png
+2026-04-28 21:19:30 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_9.png
+2026-04-28 21:19:31 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_10.png
+2026-04-28 21:19:31 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_10.png
+2026-04-28 21:19:31 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_11.png
+2026-04-28 21:19:31 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_11.png
+2026-04-28 21:19:31 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_12.png
+2026-04-28 21:19:31 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_12.png
+2026-04-28 21:19:31 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_13.png
+2026-04-28 21:19:31 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_13.png
+2026-04-28 21:19:31 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_14.png
+2026-04-28 21:19:31 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_14.png
+2026-04-28 21:19:32 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_15.png
+2026-04-28 21:19:32 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_15.png
+2026-04-28 21:19:32 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_16.png
+2026-04-28 21:19:32 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_16.png
+2026-04-28 21:19:32 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_17.png
+2026-04-28 21:19:32 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_17.png
+2026-04-28 21:19:32 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_18.png
+2026-04-28 21:19:32 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_18.png
+2026-04-28 21:19:33 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_19.png
+2026-04-28 21:19:33 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_19.png
+2026-04-28 21:19:33 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_20.png
+2026-04-28 21:19:33 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_20.png
+2026-04-28 21:19:33 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_21.png
+2026-04-28 21:19:33 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_21.png
+2026-04-28 21:19:33 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_22.png
+2026-04-28 21:19:33 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_22.png
+2026-04-28 21:19:34 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_23.png
+2026-04-28 21:19:34 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_23.png
+2026-04-28 21:19:34 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_24.png
+2026-04-28 21:19:34 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_24.png
+2026-04-28 21:19:34 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_25.png
+2026-04-28 21:19:34 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_25.png
+2026-04-28 21:19:34 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_26.png
+2026-04-28 21:19:34 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_26.png
+2026-04-28 21:19:34 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_27.png
+2026-04-28 21:19:34 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_27.png
+2026-04-28 21:19:35 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_28.png
+2026-04-28 21:19:35 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_28.png
+2026-04-28 21:19:35 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_29.png
+2026-04-28 21:19:35 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_29.png
+2026-04-28 21:19:35 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_30.png
+2026-04-28 21:19:35 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_30.png
+2026-04-28 21:19:35 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_31.png
+2026-04-28 21:19:35 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_31.png
+2026-04-28 21:19:36 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_32.png
+2026-04-28 21:19:36 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_32.png
+2026-04-28 21:19:36 - INFO - 已保存图片: output_images\12G614-1\12G614-1_page_33.png
+2026-04-28 21:19:36 - INFO - 图片文件确认存在: output_images\12G614-1\12G614-1_page_33.png
+2026-04-28 21:19:36 - INFO - 完成处理PDF文件: 12G614-1.pdf
+2026-04-28 21:19:36 - INFO - 搜索服务启动成功，端口: 5000
+2026-04-28 21:19:36 - INFO - 访问地址: http://127.0.0.1:5000
+2026-04-28 21:19:36 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-04-28 21:19:36 - INFO - [33mPress CTRL+C to quit[0m
+2026-04-28 21:19:38 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:38] "GET / HTTP/1.1" 200 -
+2026-04-28 21:19:38 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:38] "[33mGET /static/logo1.png HTTP/1.1[0m" 404 -
+2026-04-28 21:19:42 - INFO - 查询PDF: 12G614-1.pdf, 基础名称: 12G614-1
+2026-04-28 21:19:42 - INFO - 从数据库找到 29 页
+2026-04-28 21:19:42 - INFO - 返回页面: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+2026-04-28 21:19:42 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:42] "POST /analyze_pdf HTTP/1.1" 200 -
+2026-04-28 21:19:42 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_5.png
+2026-04-28 21:19:42 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_6.png
+2026-04-28 21:19:42 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_7.png
+2026-04-28 21:19:42 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_8.png
+2026-04-28 21:19:42 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_9.png
+2026-04-28 21:19:43 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:43] "GET /output_images/12G614-1/12G614-1_page_5.png HTTP/1.1" 200 -
+2026-04-28 21:19:43 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:43] "GET /output_images/12G614-1/12G614-1_page_7.png HTTP/1.1" 200 -
+2026-04-28 21:19:43 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:43] "GET /output_images/12G614-1/12G614-1_page_9.png HTTP/1.1" 200 -
+2026-04-28 21:19:43 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:43] "GET /output_images/12G614-1/12G614-1_page_6.png HTTP/1.1" 200 -
+2026-04-28 21:19:43 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:43] "GET /output_images/12G614-1/12G614-1_page_8.png HTTP/1.1" 200 -
+2026-04-28 21:19:44 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_10.png
+2026-04-28 21:19:44 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:44] "GET /output_images/12G614-1/12G614-1_page_10.png HTTP/1.1" 200 -
+2026-04-28 21:19:45 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_11.png
+2026-04-28 21:19:45 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:45] "GET /output_images/12G614-1/12G614-1_page_11.png HTTP/1.1" 200 -
+2026-04-28 21:19:46 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_12.png
+2026-04-28 21:19:46 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:46] "GET /output_images/12G614-1/12G614-1_page_12.png HTTP/1.1" 200 -
+2026-04-28 21:19:46 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_13.png
+2026-04-28 21:19:46 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:46] "GET /output_images/12G614-1/12G614-1_page_13.png HTTP/1.1" 200 -
+2026-04-28 21:19:46 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_14.png
+2026-04-28 21:19:46 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:46] "GET /output_images/12G614-1/12G614-1_page_14.png HTTP/1.1" 200 -
+2026-04-28 21:19:47 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_15.png
+2026-04-28 21:19:47 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:47] "GET /output_images/12G614-1/12G614-1_page_15.png HTTP/1.1" 200 -
+2026-04-28 21:19:47 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_16.png
+2026-04-28 21:19:47 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:47] "GET /output_images/12G614-1/12G614-1_page_16.png HTTP/1.1" 200 -
+2026-04-28 21:19:48 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_17.png
+2026-04-28 21:19:48 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:48] "GET /output_images/12G614-1/12G614-1_page_17.png HTTP/1.1" 200 -
+2026-04-28 21:19:48 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_18.png
+2026-04-28 21:19:48 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:48] "GET /output_images/12G614-1/12G614-1_page_18.png HTTP/1.1" 200 -
+2026-04-28 21:19:48 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_19.png
+2026-04-28 21:19:48 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:48] "GET /output_images/12G614-1/12G614-1_page_19.png HTTP/1.1" 200 -
+2026-04-28 21:19:49 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_20.png
+2026-04-28 21:19:49 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:49] "GET /output_images/12G614-1/12G614-1_page_20.png HTTP/1.1" 200 -
+2026-04-28 21:19:49 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_21.png
+2026-04-28 21:19:49 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:49] "GET /output_images/12G614-1/12G614-1_page_21.png HTTP/1.1" 200 -
+2026-04-28 21:19:49 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_22.png
+2026-04-28 21:19:49 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:49] "GET /output_images/12G614-1/12G614-1_page_22.png HTTP/1.1" 200 -
+2026-04-28 21:19:50 - INFO - 图片请求: output_images\12G614-1/12G614-1_page_23.png
+2026-04-28 21:19:50 - INFO - 127.0.0.1 - - [28/Apr/2026 21:19:50] "GET /output_images/12G614-1/12G614-1_page_23.png HTTP/1.1" 200 -

@@ -1,0 +1,13 @@
+IfcDuctSegment_Rectangular
+IfcDuctSegment_Circular
+IfcDuctSegment_Other
+IfcPipeFitting_Tee
+IfcPipeFitting_ReducingTee
+IfcPipeFitting_EqualTee
+IfcPipeFitting_ReducingCross
+IfcPipeFitting_GenericTee
+IfcPipeFitting_GenericCross
+IfcPipeFitting_ConcentricReducer
+IfcPipeFitting_Elbow
+IfcPipeFitting_Transition
+IfcPipeFitting_Other

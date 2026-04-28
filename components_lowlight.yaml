@@ -1,0 +1,20 @@
+path: D:\BIM_Component_Recognition\datasets_lowlight\BIM  
+train: images/train
+val: images/val
+test:
+
+nc: 13
+names:  
+  0: IfcDuctSegment_Rectangular
+  1: IfcDuctSegment_Circular
+  2: IfcDuctSegment_Other
+  3: IfcPipeFitting_Tee
+  4: IfcPipeFitting_ReducingTee
+  5: IfcPipeFitting_EqualTee
+  6: IfcPipeFitting_ReducingCross
+  7: IfcPipeFitting_GenericTee
+  8: IfcPipeFitting_GenericCross
+  9: IfcPipeFitting_ConcentricReducer
+  10: IfcPipeFitting_Elbow
+  11: IfcPipeFitting_Transition
+  12: IfcPipeFitting_Other

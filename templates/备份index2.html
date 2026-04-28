@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建筑图通 - 智能标注平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', '微软雅黑', sans-serif;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .black-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1d;
+            clip-path: polygon(0 0, 28% 0, 18% 100%, 0 100%);
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        .main-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #c92a44 0%, #8b1a30 100%);
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .side-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24%;
+            height: 100%;
+            padding: 25px;
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+        }
+        .custom-logo img { max-width: 244px; height: auto; }
+        .features { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 20px; }
+        .feature { display: flex; align-items: center; gap: 15px; }
+        .feature-icon {
+            width: 28px;
+            height: 28px;
+            stroke: #fff;
+            stroke-width: 1.5;
+            fill: none;
+            flex-shrink: 0;
+        }
+        .feature p { font-size: 14px; color: #e0e0e0; }
+
+        .carousel-container {
+            position: absolute;
+            top: 1%;
+            left: 27%;
+            width: 72%;
+            height: 100%;
+            z-index: 8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            pointer-events: all;
+            transform: translateY(-30px);
+        }
+        .carousel-stage {
+            position: relative;
+            width: 100%;
+            height: 650px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 215px;
+            height: 500px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 13px;
+            box-shadow: 
+                inset 0 0 35px rgba(255,255,255,0.1),
+                0 15px 35px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            backdrop-filter: blur(4px);
+            opacity: 0.85;
+            z-index: 1;
+        }
+
+        .carousel-item.active {
+            border: none;
+            box-shadow: 
+                0 0 0 4px #ebd3d3,
+                0 0 0 2px #E63946,
+                0 25px 50px rgba(0, 0, 0, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .carousel-item.hover-active {
+            border: none;
+            box-shadow: 
+                0 0 0 4px #ebd3d3,
+                0 0 0 2px #E63946,
+                0 25px 50px rgba(0, 0, 0, 0.7);
+            background: rgba(255, 255, 255, 0.15);
+            opacity: 1;
+            z-index: 20;
+        }
+
+        .carousel-item:active {
+            transform: translate(-50%, -50%) scale(0.98) !important;
+            transition: transform 0.1s ease;
+        }
+
+        .carousel-icon {
+            width: 96px;
+            height: 96px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+            transition: transform 0.4s ease;
+            opacity: 0.9;
+        }
+        .carousel-item:hover .carousel-icon {
+            transform: scale(1.05);
+        }
+        .carousel-title {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            color: #CCCCCC;
+        }
+
+        .carousel-controls {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="black-layer" id="blackLayer"></div>
+        <div class="main-area"></div>
+
+        <div class="side-content">
+            <div class="custom-logo">
+                <img src="D:/BIM_Component_Recognition/static/logo1.png" alt="建筑图通">
+            </div>
+            <div class="features">
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M12 6v6l4 2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                    </svg>
+                    <p>操作简单便捷，轻松上手无难度</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="12" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M3 15h18" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <circle cx="12" cy="20" r="1" fill="#fff"/>
+                    </svg>
+                    <p>无需复杂安装，打开浏览器即可使用</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <circle cx="12" cy="8" r="4" stroke="#fff" stroke-width="1.5" fill="none"/>
+                    </svg>
+                    <p>数据安全可靠，保护你的图纸隐私</p>
+                </div>
+                <div class="feature">
+                    <svg class="feature-icon" viewBox="0 0 24 24">
+                        <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <path d="M12 16v-4" stroke="#fff" stroke-width="1.5" fill="none"/>
+                        <circle cx="12" cy="8" r="1" fill="#fff"/>
+                    </svg>
+                    <p>适配行业规范，满足专业需求</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="carousel-container" id="carouselContainer">
+            <div class="carousel-stage" id="carouselStage"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const stage = document.getElementById('carouselStage');
+
+            const itemsData = [
+                { img: "D:/BIM_Component_Recognition/static/4.png", title: "构件智能识别" },
+                { img: "D:/BIM_Component_Recognition/static/5.png", title: "图纸流程检索" },
+                { img: "D:/BIM_Component_Recognition/static/6.png", title: "资料智能解析" },
+                { img: "D:/BIM_Component_Recognition/static/7.png", title: "云端数据存储" }
+            ];
+
+            const totalItems = itemsData.length;
+            let activeIndex = 0;
+            let autoPlayTimer = null;
+            let isAnimating = false;
+            let hoveredIndex = null;
+            let isHovering = false;
+
+            const baseWidth = 215;
+            const baseGap = 13;
+            const baseScales = [1.0, 1.2, 0.9, 1.1];
+            const activeScaleFactor = 1.2;
+            const hoverScaleFactor = 1.2;
+            const yOffsets = [-40, 30, -20, 20];
+
+            function renderCards() {
+                stage.innerHTML = '';
+                itemsData.forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'carousel-item';
+                    card.setAttribute('data-index', idx);
+                    card.innerHTML = `
+                        <img src="${item.img}" alt="${item.title}" class="carousel-icon">
+                        <div class="carousel-title">${item.title}</div>
+                    `;
+                    stage.appendChild(card);
+                });
+            }
+
+            function updateCardsPosition(targetActiveIndex = activeIndex, targetHoverIndex = hoveredIndex) {
+                const cards = document.querySelectorAll('.carousel-item');
+                if (cards.length === 0) return;
+
+                const finalScales = [];
+                for (let i = 0; i < totalItems; i++) {
+                    let scale = baseScales[i];
+                    if (i === targetHoverIndex) {
+                        scale *= hoverScaleFactor;
+                    } else if (i === targetActiveIndex) {
+                        scale *= activeScaleFactor;
+                    }
+                    finalScales[i] = scale;
+                }
+
+                const visualWidths = finalScales.map(s => baseWidth * s);
+                const totalWidth = visualWidths.reduce((sum, w) => sum + w, 0) + (totalItems - 1) * baseGap;
+                const startX = -totalWidth / 2;
+                const centersX = [];
+                let currentLeft = startX;
+                for (let i = 0; i < totalItems; i++) {
+                    centersX[i] = currentLeft + visualWidths[i] / 2;
+                    currentLeft += visualWidths[i] + baseGap;
+                }
+
+                const offsets = [];
+                for (let i = 0; i < totalItems; i++) {
+                    let offset = i - targetActiveIndex;
+                    if (offset > 1) offset -= totalItems;
+                    if (offset < -2) offset += totalItems;
+                    offsets[i] = offset;
+                }
+
+                cards.forEach((card, idx) => {
+                    const scale = finalScales[idx];
+                    const x = centersX[idx];
+                    const y = yOffsets[idx];
+                    const offset = offsets[idx];
+                    const absOffset = Math.abs(offset);
+
+                    card.style.transform = `translate(-50%, -50%) translateX(${x}px) translateY(${y}px) scale(${scale})`;
+                    card.style.opacity = absOffset === 0 ? 1 : (absOffset === 1 ? 0.9 : 0.8);
+
+                    if (idx === targetHoverIndex) {
+                        card.style.zIndex = 30;
+                    } else if (idx === targetActiveIndex) {
+                        card.style.zIndex = 20;
+                    } else {
+                        card.style.zIndex = absOffset === 1 ? 10 : 5;
+                    }
+
+                    if (idx === targetHoverIndex) {
+                        card.classList.add('hover-active');
+                        card.classList.remove('active');
+                    } else if (idx === targetActiveIndex && targetHoverIndex === null) {
+                        card.classList.add('active');
+                        card.classList.remove('hover-active');
+                    } else {
+                        card.classList.remove('active', 'hover-active');
+                    }
+                });
+            }
+
+            function nextSlide() {
+                if (isAnimating || isHovering) return;
+                isAnimating = true;
+                activeIndex = (activeIndex + 1) % totalItems;
+                updateCardsPosition(activeIndex, null);
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 1200);
+            }
+
+            function handleMouseEnter(index) {
+                stopAutoPlay();
+                isHovering = true;
+                hoveredIndex = index;
+                updateCardsPosition(activeIndex, index);
+            }
+
+            function handleMouseLeave() {
+                isHovering = false;
+                hoveredIndex = null;
+                updateCardsPosition(activeIndex, null);
+                startAutoPlay();
+            }
+
+            function startAutoPlay() {
+                stopAutoPlay();
+                autoPlayTimer = setInterval(() => {
+                    if (!isAnimating && !isHovering) {
+                        nextSlide();
+                    }
+                }, 2500);
+            }
+
+            function stopAutoPlay() {
+                if (autoPlayTimer) {
+                    clearInterval(autoPlayTimer);
+                    autoPlayTimer = null;
+                }
+            }
+
+            renderCards();
+
+            setTimeout(() => {
+                const cards = document.querySelectorAll('.carousel-item');
+                cards.forEach((card, idx) => {
+                    card.addEventListener('mouseenter', () => handleMouseEnter(idx));
+                    card.addEventListener('mouseleave', handleMouseLeave);
+                });
+
+                updateCardsPosition(activeIndex, null);
+                startAutoPlay();
+            }, 50);
+
+            stage.addEventListener('click', (e) => {
+                const card = e.target.closest('.carousel-item');
+                if (!card || isAnimating) return;
+
+                const index = parseInt(card.getAttribute('data-index'));
+
+                if (index === 0) {
+                    window.location.href = "/2";
+                    return;
+                }
+
+                if (index === activeIndex && !isHovering) {
+                    alert(`${itemsData[index].title} 功能已触发`);
+                } else if (isHovering && index === hoveredIndex) {
+                    alert(`${itemsData[index].title} 功能已触发`);
+                } else {
+                    stopAutoPlay();
+                    activeIndex = index;
+                    hoveredIndex = null;
+                    isHovering = false;
+                    updateCardsPosition(activeIndex, null);
+                    startAutoPlay();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
